@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Diffie-Hellman Key Exchange</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+        .box {
+            background: #fff;
+            width: 350px;
+            margin: 40px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px gray;
+        }
+        input {
+            width: 120px;
+            margin: 5px;
+            padding: 5px;
+        }
+        button {
+            padding: 8px 15px;
+            background: blue;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Diffie-Hellman Key Exchange</h2>
+
+    <p>Prime (p): <input type="number" id="p" value="23"></p>
+    <p>Generator (g): <input type="number" id="g" value="5"></p>
+    <p>Alice Private Key (a): <input type="number" id="a" value="6"></p>
+
+    <button onclick="compute()">Compute</button>
+
+    <p id="result"></p>
+</div>
+
+<script>
+    function modPow(base, exp, mod) {
+        let result = 1;
+        base %= mod;
+
+        while (exp > 0) {
+            if (exp % 2 === 1) {
+                result = (result * base) % mod;
+            }
+            exp = Math.floor(exp / 2);
+            base = (base * base) % mod;
+        }
+        return result;
+    }
+
+    function compute() {
+        const p = Number(document.getElementById("p").value);
+        const g = Number(document.getElementById("g").value);
+        const a = Number(document.getElementById("a").value);
+
+        const b = Math.floor(Math.random() * (p - 2)) + 1;
+
+        const A = modPow(g, a, p);
+        const B = modPow(g, b, p);
+
+        const Ka = modPow(B, a, p);
+        const Kb = modPow(A, b, p);
+
+        document.getElementById("result").innerHTML = `
+            Alice private key = ${a}<br>
+            Bob private key = ${b}<br><br>
+            Alice public key A = ${A}<br>
+            Bob public key B = ${B}<br><br>
+            Alice secret key = ${Ka}<br>
+            Bob secret key = ${Kb}
+        `;
+    }
+</script>
+
+</body>
+</html>
