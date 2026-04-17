@@ -1,93 +1,82 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Diffie-Hellman Key Exchange</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-            text-align: center;
-        }
-        .box {
-            background: #fff;
-            width: 350px;
-            margin: 40px auto;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px gray;
-        }
-        input {
-            width: 120px;
-            margin: 5px;
-            padding: 5px;
-        }
-        button {
-            padding: 8px 15px;
-            background: blue;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #result {
-            margin-top: 15px;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
+public class SubstitutionCipher {
 
-<div class="box">
-    <h2>Diffie-Hellman Key Exchange</h2>
+    static String encrypt(String text) {
+        String alpha = "abcdefghijklmnopqrstuvwxyz";
+        String sub   = "zyxwvutsrqponmlkjihgfedcba"; // reverse mapping
+        text = text.toLowerCase();
+        String result = "";
 
-    <p>Prime (p): <input type="number" id="p" value="23"></p>
-    <p>Generator (g): <input type="number" id="g" value="5"></p>
-    <p>Alice Private Key (a): <input type="number" id="a" value="6"></p>
-
-    <button onclick="compute()">Compute</button>
-
-    <p id="result"></p>
-</div>
-
-<script>
-    function modPow(base, exp, mod) {
-        let result = 1;
-        base %= mod;
-
-        while (exp > 0) {
-            if (exp % 2 === 1) {
-                result = (result * base) % mod;
-            }
-            exp = Math.floor(exp / 2);
-            base = (base * base) % mod;
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            int index = alpha.indexOf(ch);
+            result += (index != -1) ? sub.charAt(index) : ch;
         }
         return result;
     }
 
-    function compute() {
-        const p = Number(document.getElementById("p").value);
-        const g = Number(document.getElementById("g").value);
-        const a = Number(document.getElementById("a").value);
+    static String decrypt(String text) {
+        String alpha = "abcdefghijklmnopqrstuvwxyz";
+        String sub   = "zyxwvutsrqponmlkjihgfedcba";
+        String result = "";
 
-        const b = Math.floor(Math.random() * (p - 2)) + 1;
-
-        const A = modPow(g, a, p);
-        const B = modPow(g, b, p);
-
-        const Ka = modPow(B, a, p);
-        const Kb = modPow(A, b, p);
-
-        document.getElementById("result").innerHTML = `
-            Alice private key = ${a}<br>
-            Bob private key = ${b}<br><br>
-            Alice public key A = ${A}<br>
-            Bob public key B = ${B}<br><br>
-            Alice secret key = ${Ka}<br>
-            Bob secret key = ${Kb}
-        `;
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            int index = sub.indexOf(ch);
+            result += (index != -1) ? alpha.charAt(index) : ch;
+        }
+        return result;
     }
-</script>
 
-</body>
-</html>
+    public static void main(String[] args) {
+        String text = "HELLO";
+
+        System.out.println("Original Text: " + text);
+
+        String enc = encrypt(text);
+        System.out.println("Encrypted Text: " + enc);
+
+        String dec = decrypt(enc);
+        System.out.println("Decrypted Text: " + dec);
+    }
+}
+
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import java.security.SecureRandom;
+import java.util.Base64;
+
+public class AESShort {
+    public static void main(String[] args) throws Exception {
+
+        String text = "This is AES Symmetric Algorithm";
+        System.out.println("Original Text : " + text);
+
+        // Generate Key
+        KeyGenerator kg = KeyGenerator.getInstance("AES");
+        kg.init(256);
+        SecretKey key = kg.generateKey();
+
+        // Generate IV
+        byte[] ivBytes = new byte[16];
+        new SecureRandom().nextBytes(ivBytes);
+        IvParameterSpec iv = new IvParameterSpec(ivBytes);
+
+        System.out.println("Rijndael Key (Base64): " +
+                Base64.getEncoder().encodeToString(key.getEncoded()));
+        System.out.println("IV (Base64) : " +
+                Base64.getEncoder().encodeToString(ivBytes));
+
+        // Encrypt
+        Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        c.init(Cipher.ENCRYPT_MODE, key, iv);
+        String enc = Base64.getEncoder().encodeToString(c.doFinal(text.getBytes()));
+
+        System.out.println("Encrypted Text : " + enc);
+
+        // Decrypt
+        c.init(Cipher.DECRYPT_MODE, key, iv);
+        String dec = new String(c.doFinal(Base64.getDecoder().decode(enc)));
+
+        System.out.println("Decrypted Text : " + dec);
+    }
+}
